@@ -21,4 +21,7 @@ export const CHAIN_IDS = {
   "0x1A4D2": "GoChain Mainnet",
   "0x7A69": "Local Development Network (Hardhat Network)",
   "0xe708": "Linea Mainnet",
+  "0x539": "Ganache Local",
 };
+export const RCP_PROVIDER = process.env.REACT_APP_RCP_PROVIDER;
+export const SENDER_PRIVATE_KEY = process.env.REACT_APP_SENDER_PRIVATE_KEY;

@@ -53,7 +53,7 @@ const MetaMask = () => {
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on("chainChanged", ({ chainId }) => {
-        // console.log("On chainChanged", chainId, 888);
+        console.log("On chainChanged", chainId, 888);
         if (chainId) {
           setChainId(CHAIN_IDS[chainId]);
         }
@@ -63,7 +63,7 @@ const MetaMask = () => {
         setDefaultAccount(e[0]);
       });
       window.ethereum.on("connect", ({ chainId }) => {
-        // console.log("on Connect",chainId, 888);
+        console.log("on Connect", chainId, 888);
         if (chainId) {
           setChainId(CHAIN_IDS[chainId]);
         }
@@ -169,11 +169,13 @@ const MetaMask = () => {
                 </Table>
               </Col>
             </Row>
-            <Row>
-              <Col>
-                <TransferBalance />
-              </Col>
-            </Row>
+            {defaultAccount && (
+              <Row>
+                <Col>
+                  <TransferBalance useAccountAddress={defaultAccount} />
+                </Col>
+              </Row>
+            )}
           </Card.Body>
           <Card.Footer>
             <center>
