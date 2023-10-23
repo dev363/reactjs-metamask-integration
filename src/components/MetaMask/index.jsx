@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import {
   Alert,
   Badge,
@@ -11,7 +11,10 @@ import {
 } from "react-bootstrap";
 import { ethers } from "ethers";
 import CopyToClipboard from "react-copy-to-clipboard";
+import { CHAIN_IDS } from "./Constants";
+
 const MetaMask = () => {
+  const [chainID, setChainId] = useState(null);
   const [defaultAccount, setDefaultAccount] = useState(null);
   const [balance, setBalance] = useState(null);
   const [error, setError] = useState(null);
@@ -24,7 +27,6 @@ const MetaMask = () => {
       window.ethereum
         .request({ method: "eth_requestAccounts" })
         .then((res) => {
-          console.log(res, 8889);
           changeAccount(res[0]);
         })
         .catch((err) => {
@@ -37,26 +39,74 @@ const MetaMask = () => {
     }
   };
 
+  const isConnectedAccount = async () => {
+    setLoading(true);
+    const account =
+      (await window.ethereum.request({ method: "eth_accounts" })) || false;
+    if (account) {
+      setDefaultAccount(account[0]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on("chainChanged", ({ chainId }) => {
+        // console.log("On chainChanged", chainId, 888);
+        if (chainId) {
+          setChainId(CHAIN_IDS[chainId]);
+        }
+      });
+      window.ethereum.on("accountsChanged", (e) => {
+        // console.log("On accountChanged",e, 999);
+        setDefaultAccount(e[0]);
+      });
+      window.ethereum.on("connect", ({ chainId }) => {
+        // console.log("on Connect",chainId, 888);
+        if (chainId) {
+          setChainId(CHAIN_IDS[chainId]);
+        }
+      });
+      window.ethereum.on("disconnect", (e) => {
+        // console.log("on disconnect",e, 666);
+        setDefaultAccount(e[0]);
+        setBalance(null);
+      });
+    }
+    isConnectedAccount();
+  }, []);
+
+  useEffect(() => {
+    getUserBalance(defaultAccount);
+  }, [defaultAccount]);
+
   const changeAccount = (account) => {
     setDefaultAccount(account);
-    getUserBalance(account);
   };
 
   const getUserBalance = (account) => {
-    window.ethereum
-      .request({
-        method: "eth_getBalance",
-        params: [String(account), "latest"],
-      })
-      .then((res) => {
-        let balance = ethers.formatEther(res);
-        setBalance(balance);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError("Unable to get Balance");
-        setLoading(false);
-      });
+    if (account) {
+      try {
+        window.ethereum
+          .request({
+            method: "eth_getBalance",
+            params: [String(account), "latest"],
+          })
+          .then((res) => {
+            let balance = ethers.formatEther(res);
+            setBalance(balance);
+            setLoading(false);
+          })
+          .catch((err) => {
+            setError("Unable to get Balance");
+            setLoading(false);
+          });
+      } catch (error) {
+        setBalance(null);
+      }
+    } else {
+      setBalance(null);
+    }
   };
   return (
     <Row className="justify-content-md-center">
@@ -101,6 +151,10 @@ const MetaMask = () => {
                   <th>Balance</th>
                   <td>{loading ? <Spinner size="sm" /> : balance}</td>
                 </tr>
+                <tr>
+                  <th>Netword</th>
+                  <td>{loading ? <Spinner size="sm" /> : chainID}</td>
+                </tr>
                 {error && (
                   <tr>
                     <td colSpan={2}>
@@ -113,9 +167,11 @@ const MetaMask = () => {
           </Card.Body>
           <Card.Footer>
             <center>
-              <Button variant="primary" onClick={(e) => connectMetamask(e)}>
-                Connect Metamask
-              </Button>
+              {!defaultAccount && (
+                <Button variant="primary" onClick={(e) => connectMetamask(e)}>
+                  Connect Metamask
+                </Button>
+              )}
             </center>
           </Card.Footer>
         </Card>
