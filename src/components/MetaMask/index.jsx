@@ -12,6 +12,7 @@ import {
 import { ethers } from "ethers";
 import CopyToClipboard from "react-copy-to-clipboard";
 import { CHAIN_IDS } from "./Constants";
+import TransferBalance from "./TransferBalance";
 
 const MetaMask = () => {
   const [chainID, setChainId] = useState(null);
@@ -118,52 +119,61 @@ const MetaMask = () => {
             </center>
           </Card.Header>
           <Card.Body>
-            <Table striped bordered hover>
-              <tbody>
-                <tr>
-                  <th>Address</th>
-                  <td>
-                    {loading ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <Fragment>
-                        {defaultAccount}
-                        &nbsp;
-                        {defaultAccount && (
-                          <CopyToClipboard
-                            text={defaultAccount}
-                            onCopy={() => setCopy(true)}
-                          >
-                            <Badge
-                              bg="warning"
-                              text="dark"
-                              className="cursor-pointer"
-                            >
-                              {isCopy ? "Copied!" : "Copy"}
-                            </Badge>
-                          </CopyToClipboard>
+            <Row>
+              <Col>
+                <Table striped bordered hover>
+                  <tbody>
+                    <tr>
+                      <th>Address</th>
+                      <td>
+                        {loading ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <Fragment>
+                            {defaultAccount}
+                            &nbsp;
+                            {defaultAccount && (
+                              <CopyToClipboard
+                                text={defaultAccount}
+                                onCopy={() => setCopy(true)}
+                              >
+                                <Badge
+                                  bg="warning"
+                                  text="dark"
+                                  className="cursor-pointer"
+                                >
+                                  {isCopy ? "Copied!" : "Copy"}
+                                </Badge>
+                              </CopyToClipboard>
+                            )}
+                          </Fragment>
                         )}
-                      </Fragment>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>Balance</th>
+                      <td>{loading ? <Spinner size="sm" /> : balance}</td>
+                    </tr>
+                    <tr>
+                      <th>Netword</th>
+                      <td>{loading ? <Spinner size="sm" /> : chainID}</td>
+                    </tr>
+                    {error && (
+                      <tr>
+                        <td colSpan={2}>
+                          <Alert variant="danger">{error}</Alert>
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Balance</th>
-                  <td>{loading ? <Spinner size="sm" /> : balance}</td>
-                </tr>
-                <tr>
-                  <th>Netword</th>
-                  <td>{loading ? <Spinner size="sm" /> : chainID}</td>
-                </tr>
-                {error && (
-                  <tr>
-                    <td colSpan={2}>
-                      <Alert variant="danger">{error}</Alert>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
+                  </tbody>
+                </Table>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <TransferBalance />
+              </Col>
+            </Row>
           </Card.Body>
           <Card.Footer>
             <center>
